@@ -50,3 +50,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+src/bootloader/.DS_Store
+src/.DS_Store
+.DS_Store

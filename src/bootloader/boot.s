@@ -7,6 +7,8 @@ org 0x7c00
 section .text
 global _entry
 _entry:
+	cld
+	cli
 	xor 	ax, ax
 	xor 	bx, bx
 	xor 	cx, cx
@@ -21,6 +23,7 @@ _entry:
 	mov 	fs, ax
 	mov 	sp, 0x7c00
 
+	sti
 	add 	ah, 0x02
 	inc 	al
 	add 	dl, 0x80
