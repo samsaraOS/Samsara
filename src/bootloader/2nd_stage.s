@@ -12,16 +12,12 @@ _start:
 
 	call 	enable_a20line
 
-	mov 	ax, 0xb800
-	mov 	es, ax
+	mov 	eax, cr0
+	or 	eax, 1
+	mov 	cr0, eax
 
-	mov 	ah, 0x00
-	xor 	bx, bx
-	add 	bl, 0x11
-	int 	0x10
-
-	mov 	si, msg_a20_enabled
-	call 	print
+	cli
+	jmp 	0x8:pmode
 
 .end:
 	cli
@@ -31,10 +27,24 @@ _start:
 .a20_fail:
 	jmp 	.end
 
-msg_a20_enabled db "a20 line enabled and gdt loaded.", 0x0A, 0x0D, 0
-msg_booted db "Booted the board.", 0x0A, 0x0D, 0
-
 %include "gdt32table.s"
 %include "a20_line.s"
-%include "print.s"
+
+section .bss
+stack_bottom:
+	resb 	16368
+section .text
+stack_top:
+bits 32
+pmode:
+	mov 	ax, 0x10
+	mov 	ds, ax
+	mov 	es, ax
+	mov 	fs, ax
+	mov 	gs, ax
+	mov 	ss, ax
+	mov 	esp, stack_bottom
+
+	cli
+	hlt
 
