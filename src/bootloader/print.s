@@ -1,8 +1,14 @@
 %ifndef PRINT_H
 %define PRINT_H
+
+;***
+; Functionality related to printing to screen.
+;***
+
 calc_y_coordinate:
         movzx ax, byte [yco]
-        ; adding the ax by 160 which is the number of characters in 1 row time 2
+        ; adding the ax by 160 which is the number of 
+	; characters in 1 row time 2
         ; because each characters is 2 bytes in video memory
         ; (first byte is the character and the second is the attribute)
         mov dx,160
@@ -11,14 +17,14 @@ calc_y_coordinate:
         ret
 
 calc_x_coordinate:
-          ; we do the same for x coordinate but a bit differently
+        ; we do the same for x coordinate but a bit differently
         movzx bx, byte [xco]
         shl bx, 1
         ret
 
 calc_coordinates:
-  ; di is the calculated postion of the video memory
-  ; di = (xco * 2) + (yco * 80 * 2)
+  	; di is the calculated postion of the video memory
+  	; di = (xco * 2) + (yco * 80 * 2)
         mov di, 0
         add di, ax
         add di, bx
