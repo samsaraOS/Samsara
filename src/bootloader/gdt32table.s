@@ -2,6 +2,7 @@
 ; In this file, we'll define GDT
 ;***
 %ifndef GDT_HEADER
+%define GDT_HEADER 1
 
 GDT_PTR:
 	dw 	GDT_END - GDT_START - 1
