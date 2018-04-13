@@ -11,8 +11,8 @@ global _init_idt
 ;***
 _init_idt:
         cli     ;clearing the interrupts to start setting up the IDT
-        mov     rdi,rax
-        lidt    rdi             ;loading the idtr
+        mov     rdi,rax ;* copying rax into rdi for iterating the IDT vectors
+        push    rax     ;* saving the requested loaction of idtr onto the stack
         xor     rax,rax
         mov     rcx,0xFF        ;loop counter to setup all interrupt vectors
         mov     rsi,_isr_wrapper
@@ -24,8 +24,13 @@ _init_idt:
         ;* (don't forget)
         ;***
         iv_loop:
-                cmp     rcx,0x20
-                jge     iv_loop_second
+                ;***
+                ;* if vector is greater than or equal to 32, we jump
+                ;* to second loop and start setting them to NOT PRESENT
+                ;* we only do it in reversed.  0xE0 = 0xFF - 0x1F
+                ;***
+                cmp     rcx,0xE0
+                jle     iv_loop_second
                 test    rcx,rcx
                 je      iv_loop_end
                 mov     rdx,rsi         ;* getting _isr_wrapper adrress
@@ -41,7 +46,7 @@ _init_idt:
                 mov     [rdi],0x8C00
                 shr     rdx,0x10
                 add     rdi,0x2
-                mov     [rdi],dx        ;* isr high offset [bits
+                mov     [rdi],dx        ;* isr high offset
                 add     rdi,0x2
                 xor     rdx,rdx         ; the upper 8 bytes are all zero :O
                 mov     [rdi],rdx
@@ -51,9 +56,18 @@ _init_idt:
                 jmp     iv_loop
 
         iv_loop_second:
-                cmp     rcx,0x88
+                ;***
+                ;* we check if vector number is 0x88 (0xFF-0x77).
+                ;* if it is, then it's samsara special interrupt and we'll jump
+                ;* to iv_samsara to set it up
+                ;***
+
+                cmp     rcx,0x77
                 je      iv_samsara
-                xor     rdx,rdx         ;* getting _isr_wrapper adrress
+                ;***
+                ;* since these vectors are empty, we just set NULL as the
+                ;* ISR pointer and set the PRESENT flag to 0.
+                xor     rdx,rdx
                 mov     [rdi],dx        ;* isr low offset [bits 0-15]
                 add     rdi,0x2
                 mov     [rdi],bx        ;* segment selector [bits 16-31]
@@ -65,7 +79,7 @@ _init_idt:
                 ;***
                 mov     [rdi],0x0C00
                 add     rdi,0x2
-                mov     [rdi],dx        ;* isr high offset [bits
+                mov     [rdi],dx        ;* isr high offset
                 add     rdi,0x2
                 mov     [rdi],rdx
                 add     rdi,0x8
@@ -73,7 +87,10 @@ _init_idt:
                 jmp     iv_loop
 
         iv_samsara:
-                mov     rdx,int_samsara         ;* getting _isr_wrapper adrress
+                ;***
+                ;* this is int 0x88, the special samsara interrupt (syscall)
+                ;***
+                mov     rdx,int_samsara
                 mov     [rdi],dx                ;* isr low offset [bits 0-15]
                 add     rdi,0x2
                 mov     [rdi],bx                ;* segment selector [bits 16-31]
@@ -86,20 +103,27 @@ _init_idt:
                 mov     [rdi],0x8C00
                 shr     rdx,0x10
                 add     rdi,0x2
-                mov     [rdi],dx        ;* isr high offset [bits
+                mov     [rdi],dx        ;* isr high offset
                 add     rdi,0x2
                 xor     rdx,rdx         ; the upper 8 bytes are all zero :O
                 mov     [rdi],rdx
                 add     rdi,0x8
                 dec     rcx
                 jmp     iv_loop
+
         iv_loop_end:
+                pop rax ;* restoring requested IDT location
+                lidt rax        ;* loading the idtr
                 xor rax,rax
                 ret
 
-
+;***
+;* calculate the size of an ISR
+;* hope this method works with nasm
+;* otherwise should calculate manually and hardcode the offset :(
+;***
 _INT_N_SIZE:
-        dd      _INT_N_END - _INT_N_START       ;* calculate the size of
+        dd      _INT_N_END - _INT_N_START
 
 _isr_wrapper:
         ;***
@@ -209,8 +233,6 @@ _isr_wrapper:
         push    0x88
         jmp     interrupt_handler
 
-
-interrupt_handler:
-        ;***
-        ;* To Be Continued :D
-        ;***
+;***
+;* interrupt_handler function will be implemented later (most likely in C)
+;***
