@@ -5,20 +5,17 @@
 
 global _start
 _start:
-	add 	sp, 0x2000
 	cld
+	cli
 
-	lgdt 	[GDT_PTR]	
+	xor 	bp, bp
+	mov 	sp, 0x7e00
 
 	call 	enable_a20line
-
-	mov 	eax, cr0
-	or 	eax, 1
-	mov 	cr0, eax
-
 	cli
-	jmp 	0x8:pmode
+	xor 	eax, eax
 
+	jmp	do_switch
 .end:
 	cli
 	hlt
@@ -30,11 +27,15 @@ _start:
 %include "gdt32table.s"
 %include "a20_line.s"
 
-section .bss
-stack_bottom:
-	resb 	16368
-section .text
-stack_top:
+do_switch:
+	lgdt 	[GDT_32_PTR]
+	mov 	eax, cr0
+	or 	eax, 1
+	mov 	cr0, eax
+	jmp 	0x8:pmode
+	cli
+	hlt
+	
 bits 32
 pmode:
 	mov 	ax, 0x10
@@ -43,8 +44,7 @@ pmode:
 	mov 	fs, ax
 	mov 	gs, ax
 	mov 	ss, ax
-	mov 	esp, stack_bottom
-
+	mov 	esp, 0x1000
 	cli
 	hlt
 

@@ -11,6 +11,8 @@ global enable_a20line
 ; 1 if a20 line is enabled.
 ;***
 a20line_isenabled:
+	push 	bp
+	mov 	bp, sp
 	pushf
 	push 	ds
 	push 	es
@@ -43,12 +45,16 @@ a20line_isenabled:
 	pop 	es
 	pop 	ds
 	popf
+	mov 	sp, bp
+	pop 	bp
 	ret
 
 ;***
 ; Enable a20 line with keyboard control.
 ;***
 kbdctl_enable:
+	push 	bp
+	mov 	bp, sp
 	call 	a20wait 	; wait for kbdctl
 	mov 	al, 0xAD
 	out 	0x64, al 	; write 0xAD to kbdctl
@@ -71,6 +77,8 @@ kbdctl_enable:
 	out 	0x64, al
 	call 	a20wait
 	sti
+	mov 	sp, bp
+	pop  	bp
 	ret
 a20wait:
 	in 	al,  0x64
@@ -87,6 +95,8 @@ a20wait2:
 ; Enable a20 line with fast a20 gate
 ;***
 fast_a20gate:
+	push 	bp
+	mov 	bp, sp
 	in 	al, 0x92 	; read from fast a20 port 0x92
 	test 	al, 2
 	jnz 	.ret
@@ -94,12 +104,16 @@ fast_a20gate:
 	and 	al, 0xFE
 	out 	0x92, al 	; write or&and value back
 .ret:
+	mov 	sp, bp
+	pop 	bp
 	ret
 
 ;***
 ; Enable a20 line via BIOS.
 ;***
 bios_enable:
+	push 	bp
+	mov 	bp, sp
 	xor 	eax, eax
 	mov 	ax, 0x2403 	; see if int 15 is supported
 	int 	0x15
@@ -118,11 +132,17 @@ bios_enable:
 	jb 	.a20_failed
 	cmp 	ah, 0
 	jnz 	.a20_failed
+	xor 	eax, eax
 	jmp 	.end
 .int15_not_supported:
+	mov 	eax, 3
 .a20_nostatus:
+	mov 	eax, 2
 .a20_failed:
+	mov 	eax, 1
 .end:
+	mov 	sp, bp
+	pop 	bp
 	ret
 
 ;***
@@ -130,6 +150,8 @@ bios_enable:
 ; enabling.
 ;***
 enable_a20line:
+	push 	bp
+	mov 	bp, sp
 	call 	a20line_isenabled
 	cmp 	ax, 1
 	je 	.a20_is_enabled
@@ -148,12 +170,13 @@ enable_a20line:
 	xor 	eax, eax
 	add 	eax, 1
 .ret:
+	mov 	sp, bp
+	pop 	bp
 	ret
 .a20_is_enabled:
 	xor 	eax, eax
 	jmp 	.ret
 
-msg_kbdctl_enable db "Enabling a20 via kbdctl", 0x0A, 0x0D, 0
 
 %endif
 
