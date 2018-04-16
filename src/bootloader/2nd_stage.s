@@ -32,6 +32,8 @@ _start:
 	mov 	dh, 0x00
 	mov 	cl, 0x02
 
+	; We'll retry 5 times maximum if we get sector
+	; errors from BIOS.
 	.read_start:
 		mov 	di, 5
 	.read:
@@ -52,7 +54,8 @@ _start:
 		dec 	di
 		jnz 	.read
 		jmp 	.read_fail
-	.read_done:	
+	.read_done:
+		; After reading the disk, jump to 32-bit protected mode.
 		jmp 	do_switch
 
 .read_fail:
@@ -89,13 +92,16 @@ do_switch:
 	
 bits 32
 pmode:
-	mov 	ax, 0x10
+	mov 	eax, 0x10
 	mov 	ds, ax
 	mov 	es, ax
 	mov 	fs, ax
 	mov 	gs, ax
 	mov 	ss, ax
 	mov 	esp, 0x1000
+	; We've loaded kernel to 0x1000 here. let's jump!
+	jmp 	0x1000
+
 	cli
 	hlt
 
