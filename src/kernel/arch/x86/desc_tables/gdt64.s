@@ -19,14 +19,14 @@ global _init_gdt_64
 ;*      CS = 0x90 = 10010000
 ;*      which stands for: entry=0x12, TI=0 (GDT), RPL = 00 (ring 0)
 ;*      DS,SS,ES = 0x98 = 10011000
-;*      which stands for: entry=0x13, TI=0 (GDT), RPL= 00 (ring 0)
-;*      later the privilege level must be changed to 11 (ring 3)
-;*      and use paging for protection
+;*      which stands for: entry=0x13, TI=0 (GDT), RPL= 00 (ring 3)
+;*      we'll implement ring protection in paging
 ;***
 _init_gdt_64:
+        push    rbp
+        mov     rbp,rsp
         cli     ;clearing interrupts
         mov     rdi,rax ;* copying rax into rdi for iterating the GDT entries
-        push    rax     ;* saving the requested loaction of gdtr onto the stack
         xor     rcx,rcx
         xor     r8,r8
 
@@ -44,8 +44,63 @@ _init_gdt_64:
                 jmp _gdt_loop
 
                 _gdt_kernel_code_64:
-                ;* be continued :D
+                        ;* base and limit are ignore in 64-bit mode
+                        mov     [rdi],r8d
+                        add     rdi,0x4
+                        ;***
+                        ;* 0xBE00 = 1011111000000000 which stands for:
+                        ;* Present, DPL=3,S=0 (Not system! It's Code/Data)
+                        ;* Type=Execute/Read/Accessed/Non-Conforming (CODE)
+                        ;* middle base = 0 (8-bits, ignored)
+                        ;***
+                        mov     [rdi],0xBE00
+                        add     rdi,0x2
+                        ;***
+                        ;* 0x00B0 = 0000000010110000 which stands for:
+                        ;* high base = 0 (ignored), G=1 (4-KB aligned), D=0,
+                        ;* L=1 (64-Code), AVL=1, high limit = 0 (8-bits,ignored)
+                        ;***
+                        mov     [rdi],0x00B0
+                        add     rdi,0x2
+                        inc rcx
 
+                        ;* now we set up our data segment
+                        mov     [rdi],r8d
+                        add     rdi,0x4
+                        ;***
+                        ;* 0x3E00 = 0011111000000000 which stands for:
+                        ;* Present, DPL=3,S=0 (Not system! It's Code/Data)
+                        ;* Type=Read/Write/Accessed (DATA)
+                        ;* middle base = 0 (8-bits, ignored)
+                        ;***
+                        mov     [rdi],0xEE00
+                        add     rdi,0x2
+                        ;***
+                        ;* 0x00D0 = 00000000011010000 which stands for:
+                        ;* high base = 0 (ignored), G=1 (4-KB aligned), D=1,
+                        ;* L=0 (Not 64-Code), AVL=1,
+                        ;* high limit = 0 (8-bits,ignored)
+                        ;***
+                        mov     [rdi],0x00D0
+                        add     rdi,0x2
+                        inc rcx
 
+                        jmp     _gdt_loop
 
                 _gdt_loop_end:
+                        ;***
+                        ;*      rax holds the base address
+                        ;*      rdi     points to the limit
+                        ;***
+                        sub     rdi,rax
+                        ;* we only need the lower 16-bits of the limit
+                        and     rdi, 0x000000000000FFFF
+                        push    rdi
+                        sub     rsp,0x2
+                        push    rax
+                        lgdt    [rsp]   ;* loading the 80-bits value into gdtr 
+                        add     rsp,0xA
+                        pop     rbp
+                        sti
+                        xor     rax,rax
+                        ret
