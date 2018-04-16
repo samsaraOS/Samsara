@@ -39,5 +39,5 @@ _entry:
 	db 	0xAA
 
 
-%include "2nd_stage.s"
+%include "src/bootloader/2nd_stage.s"
 

@@ -12,7 +12,6 @@ _start:
 	mov 	sp, 0x7e00
 
 	call 	enable_a20line
-	cli
 
 	; Clear registers
 	xor 	ax, ax
@@ -78,8 +77,8 @@ real16_dbg_print:
 	.ret:
 		ret
 
-%include "gdt32table.s"
-%include "a20_line.s"
+%include "src/bootloader/gdt32table.s"
+%include "src/bootloader/a20_line.s"
 
 do_switch:
 	lgdt 	[GDT_32_PTR]
