@@ -3,13 +3,13 @@ align 8
 
 section .text
 
-global _init_idt
+global _init_idt_64
 
 ;***
 ;*      _init_idt wants an address to crete the IDT.
 ;*      looks for the address in rax register
 ;***
-_init_idt:
+_init_idt_64:
         cli     ;clearing the interrupts to start setting up the IDT
         mov     rdi,rax ;* copying rax into rdi for iterating the IDT vectors
         push    rax     ;* saving the requested loaction of idtr onto the stack
@@ -112,6 +112,7 @@ _init_idt:
                 jmp     iv_loop
 
         iv_loop_end:
+                sti     ;* enabling iterrupts again
                 pop rax ;* restoring requested IDT location
                 lidt rax        ;* loading the idtr
                 xor rax,rax
