@@ -13,16 +13,67 @@ _start:
 
 	call 	enable_a20line
 	cli
-	xor 	eax, eax
 
-	jmp	do_switch
+	; Clear registers
+	xor 	ax, ax
+	xor 	bx, bx
+	xor 	cx, cx
+	xor 	dx, dx
+	xor 	di, di
+	xor 	si, si
+
+	; Enable interrupts and load kernel from 0x1000
+	sti
+	mov 	bx, 0x1000
+	mov 	dh, 0x0E
+	mov 	dl, [BOOT_DEVICE_DB]
+	mov 	byte [SECTORS], dh
+	mov 	ch, 0x00
+	mov 	dh, 0x00
+	mov 	cl, 0x02
+
+	.read_start:
+		mov 	di, 5
+	.read:
+		mov 	ah, 0x02
+		mov 	al, [SECTORS]
+		int 	0x13
+		jc 	.retry
+		sub 	[SECTORS], al
+		jz 	.read_done
+		mov 	cl, 0x01
+		xor 	dh, 1
+		jnz 	.read_start
+		inc 	ch
+		jmp 	.read_start
+	.retry:
+		mov 	ah, 0x00
+		int 	0x13
+		dec 	di
+		jnz 	.read
+		jmp 	.read_fail
+	.read_done:	
+		jmp 	do_switch
+
+.read_fail:
+	mov 	si, msg_read_fail
+	call 	real16_dbg_print
 .end:
 	cli
 	hlt
 	jmp 	.end
 
-.a20_fail:
-	jmp 	.end
+msg_read_fail db "Failed to read kernel from disk.", 0x0A, 0x0D, 0
+
+real16_dbg_print:
+	lodsb
+	or 	al, al
+	jz 	.ret
+	mov 	ah, 0x0E
+	int 	0x10
+	jmp 	real16_dbg_print
+	.ret:
+		ret
 
 %include "gdt32table.s"
 %include "a20_line.s"
@@ -47,4 +98,8 @@ pmode:
 	mov 	esp, 0x1000
 	cli
 	hlt
+
+SECTORS db 0
+
+times 	0x1000-($-$$) db 0xFF
 

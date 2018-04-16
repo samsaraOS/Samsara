@@ -9,10 +9,11 @@ global _entry
 _entry:
 	cld
 	cli
+
+	mov 	[BOOT_DEVICE_DB], dl
 	xor 	ax, ax
 	xor 	bx, bx
 	xor 	cx, cx
-	xor 	dx, dx
 
 	xor 	si, si
 	xor 	di, di
@@ -26,15 +27,17 @@ _entry:
 	sti
 	add 	ah, 0x02
 	inc 	al
-	add 	dl, 0x80
 	add 	cl, 0x02
 	mov 	bx, _start
 	int 	0x13
 	jmp 	_start
 
+	BOOT_DEVICE_DB db 0
+
 	times 	510-($-$$) db 0x00
 	db 	0x55
 	db 	0xAA
+
 
 %include "2nd_stage.s"
 
