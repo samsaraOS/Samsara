@@ -62,7 +62,7 @@ _init_gdt_64:
                         ;***
                         mov     [rdi],0x00B0
                         add     rdi,0x2
-                        inc rcx
+                        inc     rcx
 
                         ;* now we set up our data segment
                         mov     [rdi],r8d
@@ -83,7 +83,7 @@ _init_gdt_64:
                         ;***
                         mov     [rdi],0x00D0
                         add     rdi,0x2
-                        inc rcx
+                        inc     rcx
 
                         jmp     _gdt_loop
 
@@ -98,7 +98,7 @@ _init_gdt_64:
                         push    rdi
                         sub     rsp,0x2
                         push    rax
-                        lgdt    [rsp]   ;* loading the 80-bits value into gdtr 
+                        lgdt    [rsp]   ;* loading the 80-bits value into gdtr
                         add     rsp,0xA
                         pop     rbp
                         sti
