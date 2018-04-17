@@ -190,44 +190,6 @@ _isr_wrapper:
         push	0x12
         jmp	interrupt_handler
 
-        push	0x13
-        jmp	interrupt_handler
-
-        push	0x14
-        jmp	interrupt_handler
-
-        push	0x15
-        jmp	interrupt_handler
-
-        push	0x16
-        jmp	interrupt_handler
-
-        push	0x17
-        jmp	interrupt_handler
-
-        push	0x18
-        jmp	interrupt_handler
-
-        push	0x19
-        jmp	interrupt_handler
-
-        push	0x1a
-        jmp	interrupt_handler
-
-        push	0x1b
-        jmp	interrupt_handler
-
-        push	0x1c
-        jmp	interrupt_handler
-
-        push	0x1d
-        jmp	interrupt_handler
-
-        push	0x1e
-        jmp	interrupt_handler
-
-        push	0x1f
-        jmp	interrupt_handler
 
         ;* This is special SamsaraOS Interrupt :D
         int_samsara:
