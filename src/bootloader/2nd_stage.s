@@ -1,110 +1,114 @@
-;***
-; 2nd stage of the bootloader, we're no longer
-; limited to 0x200 bytes, but we still have 1mb limits.
-;***
 
+; Entry of 2nd stage of bootloader
 global _start
 _start:
-	cld
 	cli
-
+	cli
 	xor 	bp, bp
 	mov 	sp, 0x7e00
 
 	call 	enable_a20line
+	call 	load_kernel
+	call 	switch_to_pm
+.hang:
+	cli
+	hlt
+	jmp 	.hang
 
-	; Clear registers
-	xor 	ax, ax
-	xor 	bx, bx
-	xor 	cx, cx
-	xor 	dx, dx
-	xor 	di, di
-	xor 	si, si
+SECTORS db 0
+%include "src/bootloader/gdt32table.s"
+%include "src/bootloader/a20_line.s"
+msg_read_failed db "Failed to read disk.", 0x0A, 0x0D, 0
 
-	; Enable interrupts and load kernel from 0x1000
+; Function to load kernel from disk
+load_kernel:
 	sti
 	mov 	bx, 0x1000
 	mov 	dh, 0x0E
 	mov 	dl, [BOOT_DEVICE_DB]
 	mov 	byte [SECTORS], dh
-	mov 	ch, 0x00
-	mov 	dh, 0x00
+	xor 	ch, ch
+	xor 	dh, dh
 	mov 	cl, 0x02
-
-	; We'll retry 5 times maximum if we get sector
-	; errors from BIOS.
-	.read_start:
-		mov 	di, 5
-	.read:
-		mov 	ah, 0x02
-		mov 	al, [SECTORS]
-		int 	0x13
-		jc 	.retry
-		sub 	[SECTORS], al
-		jz 	.read_done
-		mov 	cl, 0x01
-		xor 	dh, 1
-		jnz 	.read_start
-		inc 	ch
-		jmp 	.read_start
-	.retry:
-		mov 	ah, 0x00
-		int 	0x13
-		dec 	di
-		jnz 	.read
-		jmp 	.read_fail
-	.read_done:
-		; After reading the disk, jump to 32-bit protected mode.
-		jmp 	do_switch
-
-.read_fail:
-	mov 	si, msg_read_fail
+read_start:
+	push 	ebp
+	mov 	ebp, esp
+	mov 	di, 5
+read:
+	mov 	ah, 0x02
+	mov 	al, [SECTORS]
+	int 	0x13
+	jc 	retry
+	sub 	[SECTORS], al
+	jz 	read_done
+	mov 	cl, 0x01
+	xor 	dh, 1
+	jnz 	read_start
+	inc 	ch
+	jmp 	read_start
+retry:
+	xor 	ah, ah
+	int 	0x13
+	dec 	di
+	jnz 	read
+	mov 	si, msg_read_failed
 	call 	real16_dbg_print
-.end:
+error_hang:
 	cli
 	hlt
-	jmp 	.end
+	jmp 	error_hang
+read_done:
+	mov 	esp, ebp
+	pop 	ebp
+	ret
 
-msg_read_fail db "Failed to read kernel from disk.", 0x0A, 0x0D, 0
-
+; Function to print debug messages in 16-bit real mode
 real16_dbg_print:
-	lodsb
+	loadsb
 	or 	al, al
-	jz 	.ret
+	jnz 	.continue
+	ret
+.continue:
 	mov 	ah, 0x0E
 	int 	0x10
 	jmp 	real16_dbg_print
-	.ret:
-		ret
 
-%include "src/bootloader/gdt32table.s"
-%include "src/bootloader/a20_line.s"
-
-do_switch:
+; Function to switch to protected mode
+switch_to_pm:
 	lgdt 	[GDT_32_PTR]
 	mov 	eax, cr0
 	or 	eax, 1
-	mov 	cr0, eax
-	jmp 	0x8:pmode
-	cli
-	hlt
-	
-bits 32
-pmode:
-	mov 	eax, 0x10
+	mov 	cr0, eax 	
+	; 1 more instruction to execute in
+	; 16 bit real mode, then we'll be
+	; in 32-bit mode !
+	jmp 	GDT_32_CODE:pmode_init
+
+[bits 32]
+; Function to initialize pmode
+pmode_init:
+	mov 	ax, GDT_32_DATA
 	mov 	ds, ax
-	mov 	es, ax
+	mov 	ss, ax
+	mov  	es, ax
 	mov 	fs, ax
 	mov 	gs, ax
-	mov 	ss, ax
-	mov 	esp, 0x1000
-	; We've loaded kernel to 0x1000 here. let's jump!
-	jmp 	0x1000
+
+	; Setting up new stack
+	mov 	ebp, 0x90000
+	mov 	esp, ebp
+
+	call 	pmode
+
+; Function that's in protected 32-bit mode.
+; entering to kernel!
+pmode:
+	push 	ebp
+	mov 	ebp, esp
+
+	call 	0x1000
 
 	cli
 	hlt
 
-SECTORS db 0
-
-times 	0x1000-($-$$) db 0xFF
 
