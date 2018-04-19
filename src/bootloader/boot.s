@@ -6,6 +6,8 @@ align 4
 org 0x7c00
 section .text
 global _entry
+jmp 	0x0000:_entry
+
 _entry:
 	cld
 	cli
@@ -26,7 +28,7 @@ _entry:
 
 	sti
 	add 	ah, 0x02
-	inc 	al
+	add 	al, 2
 	add 	cl, 0x02
 	mov 	bx, _start
 	int 	0x13

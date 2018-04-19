@@ -64,7 +64,7 @@ read_done:
 
 ; Function to print debug messages in 16-bit real mode
 real16_dbg_print:
-	loadsb
+	lodsb
 	or 	al, al
 	jnz 	.continue
 	ret
@@ -75,6 +75,7 @@ real16_dbg_print:
 
 ; Function to switch to protected mode
 switch_to_pm:
+	cli
 	lgdt 	[GDT_32_PTR]
 	mov 	eax, cr0
 	or 	eax, 1
@@ -105,10 +106,37 @@ pmode_init:
 pmode:
 	push 	ebp
 	mov 	ebp, esp
+	
+	xor 	eax, eax
+	xor 	ebx, ebx
+	xor 	ecx, ecx
+	mov 	eax, 0x1000
 
-	call 	0x1000
 
+; Look for kernel signature
+search_loop:
+	inc 	ecx
+	cmp 	eax, 0x7000
+	jge 	notfound
+	cmp 	word [eax + ecx], 0x4141
+	jne 	search_loop
+	; Apparently kernel was found !
+	add 	ecx, 2
+	cmp 	word [eax + ecx], 0xb00b
+	jne 	search_loop
+	add 	ecx, 2
+	cmp 	word [eax + ecx], 0x4141
+	jne 	search_loop
+	add 	ecx, 2
+	mov 	ebx, eax
+	add 	ebx, ecx
+	jmp 	ebx
+
+notfound:
+	mov 	eax, 1
+done:
 	cli
 	hlt
+
 
 
