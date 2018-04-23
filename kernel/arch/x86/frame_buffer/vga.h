@@ -26,7 +26,7 @@ enum VGA_COLOR {
 };
 
 static inline uint8_t
-VGA_COLOR(enum VGA_COLOR fg, enum VGA_COLOR bg)
+VGA_SET_COLOR(enum VGA_COLOR fg, enum VGA_COLOR bg)
 {
 	return fg | bg << 4;
 }
