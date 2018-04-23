@@ -24,7 +24,7 @@ msg_read_failed db "Failed to read disk.", 0x0A, 0x0D, 0
 load_kernel:
 	sti
 	mov 	bx, 0x1000
-	mov 	dh, 22
+	mov 	dh, 20
 	mov 	dl, [BOOT_DEVICE_DB]
 	mov 	byte [SECTORS], dh
 	xor 	ch, ch
