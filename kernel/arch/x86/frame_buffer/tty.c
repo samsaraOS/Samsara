@@ -16,23 +16,17 @@
 #include <tty.h>
 #include "vga.h" 	/* VGA Definitions (colors etc.) */
 
-static const uint32_t *__tty_vmaddr = (uint32_t*)0xb8000;
+static uint16_t * const __tty_vmaddr = (uint16_t*)0xb8000;
 static uint8_t __tty_row;
 static uint8_t __tty_column;
 static uint8_t __tty_color;
 static uint16_t *__tty_buf_ptr;
 
 int
-__tty_test(void)
-{
-	return 2;
-}
-
-void
 __tty_init(void)
 {
 	uint8_t x, y;
-	uint16_t addr;
+	size_t addr;
 
 	__tty_row = 0;
 	__tty_column = 0;
@@ -45,13 +39,6 @@ __tty_init(void)
 			__tty_buf_ptr[addr] = VGA_ENTRY(' ', __tty_color);
 		}
 	}
+	return 0;
 }
-
-
-
-
-
-
-
-
 
