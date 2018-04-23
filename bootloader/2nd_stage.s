@@ -16,15 +16,15 @@ _start:
 	jmp 	.hang
 
 SECTORS db 0
-%include "src/bootloader/gdt32table.s"
-%include "src/bootloader/a20_line.s"
+%include "bootloader/gdt32table.s"
+%include "bootloader/a20_line.s"
 msg_read_failed db "Failed to read disk.", 0x0A, 0x0D, 0
 
 ; Function to load kernel from disk
 load_kernel:
 	sti
 	mov 	bx, 0x1000
-	mov 	dh, 0x0E
+	mov 	dh, 22
 	mov 	dl, [BOOT_DEVICE_DB]
 	mov 	byte [SECTORS], dh
 	xor 	ch, ch
@@ -116,7 +116,7 @@ pmode:
 ; Look for kernel signature
 search_loop:
 	inc 	ecx
-	cmp 	eax, 0x7000
+	cmp 	eax, 0xfffa
 	jge 	notfound
 	cmp 	word [eax + ecx], 0x4141
 	jne 	search_loop
