@@ -12,8 +12,10 @@
  * 
  */
 
+#include <kernel/tty.h>
+#include <sys/cdefs.h>
 #include <stdint.h>
-#include <tty.h>
+
 #include "vga.h" 	/* VGA Definitions (colors etc.) */
 
 static uint16_t * const __tty_vmaddr = (uint16_t*)0xb8000;
@@ -21,6 +23,7 @@ static uint8_t __tty_row;
 static uint8_t __tty_column;
 static uint8_t __tty_color;
 static uint16_t *__tty_buf_ptr;
+typedef unsigned long long size_t;
 
 /**
  * __tty_init(void) loops through the whole 80x24 VGA Framebuffer,

@@ -13,8 +13,9 @@ dw 	0x4141
 dw 	0xb00b
 dw 	0x4141
 _start:
-	mov 	ebp, stack_top
-	mov 	esp, ebp
+	mov 	esp, stack_top
+	cli
+	hlt
 
 	extern 	kmain
 	call 	kmain

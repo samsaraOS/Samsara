@@ -1,21 +1,29 @@
 
+#include <kernel/tty.h>
+#include <kernel/asm.h>
 #include <stdint.h>
-#include <tty.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+void
+test(char *str)
+{
+	__tty_put_entry(str[0]);
+	asm volatile("cli");
+	asm volatile("hlt");
+}
 
 int
 kmain()
 {
 	int ret;
+	char buf[] = "Hello";
 
 	ret = __tty_init();
 	if (ret) {
 		return ret;
 	}
-
-	__tty_put_entry('Y');
-	__tty_put_entry('e');
-	__tty_put_entry('s');
-	
+	test((char *)&buf);
 
 	return 0;
 }

@@ -23,8 +23,8 @@ msg_read_failed db "Failed to read disk.", 0x0A, 0x0D, 0
 ; Function to load kernel from disk
 load_kernel:
 	sti
-	mov 	bx, 0x1000
-	mov 	dh, 20
+	mov 	ebx, 0x10000
+	mov 	dh, 0x42
 	mov 	dl, [BOOT_DEVICE_DB]
 	mov 	byte [SECTORS], dh
 	xor 	ch, ch
@@ -130,6 +130,7 @@ search_loop:
 	add 	ecx, 2
 	mov 	ebx, eax
 	add 	ebx, ecx
+
 	jmp 	ebx
 
 notfound:
