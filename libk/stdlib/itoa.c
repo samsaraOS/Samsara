@@ -5,6 +5,10 @@
 void
 itoa(int n, char s[])
 {
+	/*	must check if s points to a writeable area, not kernel code!
+		is_mem_writeable(void *addr, size_t len) or something like that
+		must be implemented later to avoid arbitrary writes.
+	*/
 	int i;
 	int j;
 	int sign;
@@ -26,4 +30,3 @@ itoa(int n, char s[])
 		s[j] = c;
 	}
 }
-
