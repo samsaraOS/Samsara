@@ -16,8 +16,8 @@ print(const char *str, size_t len)
 	size_t i;
 
 	for (i = 0; i < len; i++)
-		if (putchar(bytes[i]) == EOF)
-			return 0;
+		putchar(bytes[i]);
+
 	return 1;
 }
 
@@ -31,7 +31,7 @@ printf(const char *restrict format, ...)
 	char *str;
 	const char *fmt_bad;
 	char c;
-	
+
 	va_start(parameters, format);
 
 	while (*format != 0x00) {
@@ -105,5 +105,3 @@ printf(const char *restrict format, ...)
 	va_end(parameters);
 	return written;
 }
-
-
