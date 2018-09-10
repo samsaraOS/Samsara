@@ -121,6 +121,7 @@ $(ARCHDIR)/cruntime/crtbegin.o $(ARCHDIR)/cruntime/crtend.o:
 	$(AS) -felf32 -o $@ $<
 
 clean:
+	rm -rf sysroot
 	rm -rf $(BINARIES)
 	rm -rf $(LIBK_OBJS) *.o */*.o */*/*.o
 	rm -rf $(LIBK_OBJS:.o=.d) *.d */*.d */*/*.d */*/*/*.d
