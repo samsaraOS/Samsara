@@ -30,4 +30,136 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   */
+#include <stdint.h>
+#include <string.h>
+#include <stddef.h>
+
+#include <kernel/tty.h>
+
+#include "vga.h"
+
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define VGA_ADDR 0x8b000
+
+size_t 		crow;
+size_t 		ccol;
+unsigned char 	colo;
+unsigned int* 	cbuf;
+
+void
+tty_init()
+{
+	int x, y;
+	size_t ind;
+
+	crow = 0;
+	ccol = 0;
+	colo = __vga_enc(GREY, BLACK);
+	cbuf = (unsigned int *)VGA_ADDR;
+
+	for (y = 0; y < VGA_HEIGHT; y++) {
+		for (x = 0; x < VGA_WIDTH; x++) {
+			ind = (size_t)(y * VGA_WIDTH + x);
+			cbuf[ind] = __vga_ent(' ', colo);
+		}
+	}
+}
+
+void
+tty_setcolo(unsigned char fg, unsigned char bg)
+{
+	colo = __vga_enc(fg, bg);
+}
+
+void
+tty_roll()
+{
+	size_t ind;
+	size_t old;
+
+	size_t x;
+	size_t y;
+
+	for (y = 1; y < VGA_HEIGHT; y++) {
+		for (x = 0; x < VGA_WIDTH; x++) {
+			old = y * VGA_WIDTH + x;
+			ind = ((y - 1) * VGA_WIDTH + x);
+			cbuf[old] = cbuf[ind];
+		}
+	}
+
+	y = VGA_HEIGHT;
+	for (x = 0; x < VGA_WIDTH; x++) {
+		ind = y * VGA_WIDTH + x;
+		cbuf[ind] = __vga_ent(' ', colo);
+	}
+}
+
+void
+tty_newline()
+{
+	ccol = 0;
+	if (++crow > VGA_HEIGHT)
+		tty_roll();
+}
+
+void
+tty_return()
+{
+	ccol = 0;
+}
+
+void
+tty_tab()
+{
+	if ((ccol + 8) >= VGA_WIDTH) {
+		crow++;
+		ccol = 0;
+	} else {
+		crow += 8;
+	}
+}
+
+void
+tty_putat(unsigned char c)
+{
+	size_t index;
+
+	index = crow * VGA_WIDTH + ccol;
+	cbuf[index] = __vga_ent(c, colo);
+
+	if (++ccol == VGA_WIDTH)
+		tty_newline();
+}
+
+void
+tty_parse_char(unsigned char c)
+{
+	switch (c)
+	{
+	case ('\n'):
+		tty_newline();
+		break;
+	case ('\t'):
+		tty_tab();
+		break;
+	case ('\r'):
+		tty_return();
+		break;
+	default:
+		tty_putat(c);
+		break;
+	}
+}
+
+void
+tty_write(char *str, size_t len)
+{
+	size_t i;
+
+	for (i = 0; i < len; i++)
+		tty_parse_char(str[i]);
+}
+
 

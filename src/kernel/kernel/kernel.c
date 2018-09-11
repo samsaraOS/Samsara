@@ -1,8 +1,10 @@
 
+#include <kernel/tty.h>
+
 int
-main()
+kmain()
 {
-	return 0;
+	tty_write("HELLO\n", 6);
 }
 
 

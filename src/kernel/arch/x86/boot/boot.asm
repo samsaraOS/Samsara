@@ -56,9 +56,10 @@ _start:
 	mov 	esp, stack_btm
 	extern 	_init
 	call 	_init
+
+	extern 	kmain
+	call 	kmain
 	
-	; do init
-	; call kmain
 	
 .hang:
 	cli

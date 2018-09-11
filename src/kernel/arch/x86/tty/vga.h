@@ -44,8 +44,8 @@ VGA_COLOR_MAP
 	RED 		= 4,
 	MAGENTA 	= 5,
 	BROWN 		= 6,
-	GRAY 		= 7,
-	DARK_GRAY	= 8,
+	GREY 		= 7,
+	DARK_GREY	= 8,
 	BRIGHT_BLUE 	= 9,
 	BRIGHT_GREEN 	= 10, 
 	BRIGHT_CYAN 	= 11,
@@ -55,10 +55,17 @@ VGA_COLOR_MAP
 	WHITE 		= 15
 };
 
-	
+static inline unsigned char
+__vga_enc(enum VGA_COLOR_MAP fg, enum VGA_COLOR_MAP bg)
+{
+	return (fg | (bg << 4));
+}
 
-
-
+static inline unsigned int
+__vga_ent(unsigned char c, unsigned char colo)
+{
+	return ((unsigned int)c | (unsigned char) colo << 8);
+}
 
 #endif
 
