@@ -47,15 +47,81 @@ print(const char* data, size_t length)
 	return 1;
 }
 
+static void
+__reverse(char str[])
+{
+	int i;
+	char tmp[16];
+	size_t len;
+
+	len = strlen(str) - 1;
+	memset(tmp, 0, 16);
+
+	for (i = 0; i <  16; i++)
+		tmp[i] = str[len-i];
+	for (i = 0; i < 16; i++)
+		str[i] = tmp[i];
+	str[i++] = '\0';
+}
+
+static void
+__itoa(int n, char str[])
+{
+	int pos;
+	int sign;
+
+	pos = 0;
+	sign = n;
+
+	if (sign < 0)
+		n = -n;
+
+	do {
+		str[pos] = (n % 10) + '0';
+		n = n / 10;
+		pos++;
+	} while (n > 0 &&
+		pos < 16);
+
+	if (sign < 0) {
+		str[pos] = '-';
+		pos++;
+	}
+
+	str[pos] = '\0';
+	__reverse(str);
+
+
+}
+
+static void
+__itox(unsigned int n, char str[])
+{
+	int pos;
+
+	pos = 0;
+	do {
+		str[pos] = "0123456789ABCDEF"[n & 0x0F];
+		n = n >> 4;
+		pos++;
+	} while (n != 0 
+		&& pos < 16);
+
+	str[pos] = '\0';
+	__reverse(str);
+}
+
 int 
 printf(const char* restrict format, ...) 
 {
 	va_list parameters;
 	va_start(parameters, format);
 
+	char num_str[64];
 	int written = 0;
 
 	while (*format != '\0') {
+		memset(num_str, 0, 64);
 		size_t maxrem = INT_MAX - written;
 
 		if (format[0] != '%' || format[1] == '%') {
@@ -98,6 +164,28 @@ printf(const char* restrict format, ...)
 			if (!print(str, len))
 				return -1;
 			written += len;
+		} else if (*format == 'd') {
+			format++;
+			const int num = va_arg(parameters, const int);
+			__itoa(num, num_str);
+			size_t len = strlen(num_str);
+			if (maxrem < len) {
+				return -1;
+			}
+			if (!print(num_str, len))
+				return -1;
+			written += len;
+		} else if (*format == 'x') {
+			format++;
+			const unsigned int hex = va_arg(parameters, const unsigned int);
+			__itox(hex, num_str);
+			size_t len = strlen(num_str);
+			if (maxrem < len) {
+				return -1;
+			}
+			if (!print(num_str, len))
+				return -1;
+			written++;
 		} else {
 			format = format_begun_at;
 			size_t len = strlen(format);

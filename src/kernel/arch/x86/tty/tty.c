@@ -38,9 +38,6 @@
 
 #include "vga.h"
 
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
-#define VGA_ADDR 0x8b000
 
 size_t 		crow;
 size_t 		ccol;

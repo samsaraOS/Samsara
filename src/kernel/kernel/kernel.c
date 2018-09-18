@@ -5,6 +5,7 @@ int
 kmain()
 {
 	tty_write("HELLO\n", 6);
+	return 0;
 }
 
 

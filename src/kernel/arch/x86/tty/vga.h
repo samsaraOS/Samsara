@@ -34,6 +34,10 @@
 #if !defined(__VGA_H__)
 #define __VGA_H__
 
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define VGA_ADDR 0x8b000
+
 enum 
 VGA_COLOR_MAP
 {

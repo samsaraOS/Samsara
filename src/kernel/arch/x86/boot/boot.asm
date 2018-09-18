@@ -54,11 +54,16 @@ section .text
 global 	_start
 _start:
 	mov 	esp, stack_btm
+
+	; Initializing C runtime environment
 	extern 	_init
 	call 	_init
 
-	extern 	kmain
-	call 	kmain
+	; Initializing TTY screen.
+	extern 	tty_init
+	call 	tty_init
+
+
 	
 	
 .hang:
