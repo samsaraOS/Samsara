@@ -47,8 +47,8 @@ CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lgcc
 
-ARCHDIR=src/kernel/arch/x86
-LIBK_ARCHDIR=src/libk/arch/x86
+ARCHDIR=src/kernel/arch/i386
+LIBK_ARCHDIR=src/libk/arch/i386
 
 include $(ARCHDIR)/make.config
 include $(LIBK_ARCHDIR)/make.config
@@ -128,6 +128,7 @@ clean:
 	rm -rf samsara.kernel
 	rm -rf $(OBJS) *.o */*.o */*/*.o */*/*/*.o
 	rm -rf $(OBJS:.o=.d) *.d */*.d */*/*.d */*/*/*.d
+	rm -rf bin/*
 
 install: install-headers install-kernel
 

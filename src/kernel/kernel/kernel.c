@@ -2,9 +2,9 @@
 #include <kernel/tty.h>
 
 int
-kmain()
+kinit()
 {
-	tty_write("HELLO\n", 6);
+
 	return 0;
 }
 
