@@ -8,6 +8,10 @@ extern "C" {
 #endif
 
 __attribute__((__noreturn__))
+void
+__panic(char *msg, char *file, int line);
+
+__attribute__((__noreturn__))
 void 
 abort(void);
 
