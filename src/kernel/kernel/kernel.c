@@ -43,7 +43,7 @@ int
 kinit(multiboot_header_t *multiboot)
 {
 
-	tty_write("HELLO", 5);
+	printf("Hello\n");
 	do {} while (1);
 	return 0;
 }

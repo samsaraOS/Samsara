@@ -45,7 +45,7 @@ LIBDIR=$(EXEC_PREFIX)/lib
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 LDFLAGS:=$(LDFLAGS)
-LIBS:=$(LIBS) -nostdlib -lgcc
+LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
 ARCHDIR=src/kernel/arch/i386
 LIBK_ARCHDIR=src/libk/arch/i386
@@ -106,7 +106,7 @@ LINK_LIST=\
 .PHONY: all clean install install-headers install-kernels qemu
 .SUFFIXES: .o .libk.o .c .asm
 
-all: install-headers libk_install-headers libk_all samsara.kernel
+all: install-headers libk_install-headers libk_all libk_install samsara.kernel
 	grub-file --is-x86-multiboot samsara.kernel
 	mkdir -p tmp/iso/boot/grub
 
@@ -124,13 +124,17 @@ all: install-headers libk_install-headers libk_all samsara.kernel
 	
 
 samsara.kernel: $(OBJS) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
+	$(CC) --sysroot=$(DESTDIR) -T $(ARCHDIR)/linker.ld -o $@ \
+		$(CFLAGS) $(LINK_LIST)
 
 $(ARCHDIR)/cruntime/crtbegin.o $(ARCHDIR)/cruntime/crtend.o:
 	OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
 
 .c.o:
-	$(CC) -MD -I sysroot/usr/local/include -c $< -o $@ -std=gnu11 $(CFLAGS)
+	$(CC) -MD -I sysroot/usr/local/include \
+		-c $< -o $@ -std=gnu11 $(CFLAGS) \
+		--sysroot=$(DESTDIR)
+		
 .asm.o:
 	$(AS) -felf32 -o $@ $<
 
@@ -174,6 +178,7 @@ libk_install-headers:
 libk_install-libs:
 	mkdir -p $(DESTDIR)$(LIBDIR)
 	cp $(BINARIES) $(DESTDIR)$(LIBDIR)
+	
 
 -include $(OBJS:.o=.d)
 -include $(LIBK_OBJS:.o=.d)
