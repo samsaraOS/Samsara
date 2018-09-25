@@ -51,62 +51,7 @@ stack_btm:
 stack_top:
 section .text
 
-global GDT64
-; 64 bit Global Descriptor Table
-GDT64:
-	.Null: 	equ $ - GDT64
-		dw 	0xFFFF
-		db 	0
-		db 	0
-		db 	1
-		db 	0
-	.Code:	equ $ - GDT64
-		dw 	0
-		dw	0
-		db 	0
-		db	0x9a
-		db 	0xaf
-		db 	0
-	.Data: equ $ - GDT64
-		dw 	0
-		dw 	0
-		db 	0
-		db 	0x92
-		db 	0
-		db 	0
-	.TSS: equ $ - GDT64
-		dd	0	; Reserved 
-		dd	0	; RSP0 low
-		dd	0	; RSP0 high
-		dd 	0	; RSP1 low
-		dd	0	; RSP1 high
-		dd	0 	; RSP2 low
-		dd	0 	; RSP2 high
-		dd	0 	; reserved
-		dd	0 	; reserved
-		dd	0	; IST1 low
-		dd	0 	; IST1 high
-		dd	0 	; IST2 low
-		dd	0 	; IST2 high
-		dd	0 	; IST3 low
-		dd	0 	; IST3 high
-		dd	0 	; IST4 low
-		dd	0 	; IST4 high
-		dd	0 	; IST5 low
-		dd	0	; IST5 high
-		dd 	0 	; IST6 low
-		dd 	0	; IST6 high
-		dd 	0 	; IST7 low
-		dd 	0	; IST7 high
-		dd	0	; Reserved
-		dd	0	; Reserved
-		dw	0	; IOPB off
-		dd	0	; Reserved
-	.Ptr:
-		dw 	$ - GDT64 - 1
-		dq 	GDT64
-
-global 	_start
+global _start
 _start:
 	; Just in case, disable interrupts
 	cli
@@ -116,14 +61,13 @@ _start:
 	extern 	_init
 	call 	_init
 
-	; Initializing TTY screen.
 	extern 	tty_init
 	call 	tty_init
 
 	; Clearing paging if it has been set up.
-	mov 	eax, cr0
-	and 	eax, 0x7fffffff
-	mov 	cr0, eax
+	; mov 	eax, cr0
+	; and 	eax, 0x7fffffff
+	; mov 	cr0, eax
 
 	; Loading the global descriptor table.
 	; We'll have a tiny jmp to avoid issues, ugly hack

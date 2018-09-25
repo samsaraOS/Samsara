@@ -34,9 +34,11 @@
 #if !defined(__VGA_H__)
 #define __VGA_H__
 
+#include <stdint.h>
+
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
-#define VGA_ADDR 0x8b000
+#define VGA_ADDR 0xb8000
 
 enum 
 VGA_COLOR_MAP
@@ -59,16 +61,16 @@ VGA_COLOR_MAP
 	WHITE 		= 15
 };
 
-static inline unsigned char
+static inline uint8_t
 __vga_enc(enum VGA_COLOR_MAP fg, enum VGA_COLOR_MAP bg)
 {
-	return (fg | (bg << 4));
+	return (fg | bg << 4);
 }
 
-static inline unsigned int
-__vga_ent(unsigned char c, unsigned char colo)
+static inline uint16_t
+__vga_ent(uint8_t c, uint8_t colo)
 {
-	return ((unsigned int)c | (unsigned char) colo << 8);
+	return ((uint16_t)c | (uint16_t)colo << 8);
 }
 
 #endif

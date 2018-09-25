@@ -103,7 +103,7 @@ LINK_LIST=\
 	$(ARCHDIR)/cruntime/crtend.o \
 	$(ARCHDIR)/cruntime/crtn.o 
 
-.PHONY: all clean install install-headers install-kernels
+.PHONY: all clean install install-headers install-kernels qemu
 .SUFFIXES: .o .libk.o .c .asm
 
 all: install-headers libk_install-headers libk_all samsara.kernel
@@ -134,6 +134,9 @@ $(ARCHDIR)/cruntime/crtbegin.o $(ARCHDIR)/cruntime/crtend.o:
 .asm.o:
 	$(AS) -felf32 -o $@ $<
 
+qemu:
+	/usr/local/bin/qemu-system-i386 bin/samsara.iso
+
 clean:
 	rm -rf sysroot
 	rm -rf $(BINARIES)
@@ -144,7 +147,7 @@ clean:
 	rm -rf $(OBJS:.o=.d) *.d */*.d */*/*.d */*/*/*.d
 	rm -rf bin/*
 
-install: install-headers install-kernel
+install: install-headers libk_install-headers libk_all install-kernel
 
 install-headers:
 	mkdir -p $(DESTDIR)$(INCLUDE_DIR)

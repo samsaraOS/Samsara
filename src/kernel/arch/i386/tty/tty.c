@@ -42,8 +42,8 @@
 
 size_t 		crow;
 size_t 		ccol;
-unsigned char 	colo;
-unsigned int* 	cbuf;
+uint8_t 	colo;
+uint16_t* 	cbuf;
 
 void
 tty_init()
@@ -53,8 +53,8 @@ tty_init()
 
 	crow = 0;
 	ccol = 0;
-	colo = __vga_enc(GREY, BLACK);
-	cbuf = (unsigned int *)VGA_ADDR;
+	colo = __vga_enc(BRIGHT_YELLOW, BLUE);
+	cbuf = (uint16_t *)VGA_ADDR;
 
 	for (y = 0; y < VGA_HEIGHT; y++) {
 		for (x = 0; x < VGA_WIDTH; x++) {
@@ -65,7 +65,7 @@ tty_init()
 }
 
 void
-tty_setcolo(unsigned char fg, unsigned char bg)
+tty_setcolo(uint8_t fg, uint8_t bg)
 {
 	colo = __vga_enc(fg, bg);
 }
@@ -120,7 +120,7 @@ tty_tab()
 }
 
 void
-tty_putat(unsigned char c)
+tty_putat(uint8_t c)
 {
 	size_t index;
 
@@ -132,7 +132,7 @@ tty_putat(unsigned char c)
 }
 
 void
-tty_parse_char(unsigned char c)
+tty_parse_char(uint8_t c)
 {
 	switch (c)
 	{
@@ -156,8 +156,9 @@ tty_write(char *str, size_t len)
 {
 	size_t i;
 
-	for (i = 0; i < len; i++)
+	for (i = 0; i < len; i++) {
 		tty_parse_char(str[i]);
+	}
 }
 
 
