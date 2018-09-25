@@ -107,7 +107,21 @@ LINK_LIST=\
 .SUFFIXES: .o .libk.o .c .asm
 
 all: install-headers libk_install-headers libk_all samsara.kernel
-	mv samsara.kernel bin/
+	grub-file --is-x86-multiboot samsara.kernel
+	mkdir -p tmp/iso/boot/grub
+
+	# BAD way to do things, will fix asap
+
+	touch tmp/iso/boot/grub/grub.cfg
+	echo "menuentry \"samsara\" {" >> tmp/iso/boot/grub/grub.cfg
+	echo "	multiboot	/boot/samsara.kernel" >> \
+	    tmp/iso/boot/grub/grub.cfg
+	echo "}" >> tmp/iso/boot/grub/grub.cfg
+
+	mv samsara.kernel tmp/iso/boot/samsara.kernel
+	grub-mkrescue -o bin/samsara.iso tmp/iso
+	rm -rf tmp
+	
 
 samsara.kernel: $(OBJS) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)

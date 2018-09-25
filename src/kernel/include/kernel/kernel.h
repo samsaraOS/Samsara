@@ -33,6 +33,8 @@
 #if !defined(__KERNEL_H__)
 #define __KERNEL_H__
 
+
+/* Definition of kernel panic */
 #define panic(msg) __panic(msg, __FILE__, __LINE__);
 
 

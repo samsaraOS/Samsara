@@ -74,6 +74,34 @@ GDT64:
 		db 	0x92
 		db 	0
 		db 	0
+	.TSS: equ $ - GDT64
+		dd	0	; Reserved 
+		dd	0	; RSP0 low
+		dd	0	; RSP0 high
+		dd 	0	; RSP1 low
+		dd	0	; RSP1 high
+		dd	0 	; RSP2 low
+		dd	0 	; RSP2 high
+		dd	0 	; reserved
+		dd	0 	; reserved
+		dd	0	; IST1 low
+		dd	0 	; IST1 high
+		dd	0 	; IST2 low
+		dd	0 	; IST2 high
+		dd	0 	; IST3 low
+		dd	0 	; IST3 high
+		dd	0 	; IST4 low
+		dd	0 	; IST4 high
+		dd	0 	; IST5 low
+		dd	0	; IST5 high
+		dd 	0 	; IST6 low
+		dd 	0	; IST6 high
+		dd 	0 	; IST7 low
+		dd 	0	; IST7 high
+		dd	0	; Reserved
+		dd	0	; Reserved
+		dw	0	; IOPB off
+		dd	0	; Reserved
 	.Ptr:
 		dw 	$ - GDT64 - 1
 		dq 	GDT64
@@ -96,6 +124,17 @@ _start:
 	mov 	eax, cr0
 	and 	eax, 0x7fffffff
 	mov 	cr0, eax
+
+	; Loading the global descriptor table.
+	; We'll have a tiny jmp to avoid issues, ugly hack
+	; but works.
+	;lgdt	[GDT64.Ptr]
+	;jmp 	$+2
+	;nop
+
+	; Loading Task State Segment
+	;mov 	ax, GDT64.TSS
+	;ltr	ax
 
 	; Calling kinit, a initializion function for setting
 	; up 64-bit long mode. The sole purpose of this is

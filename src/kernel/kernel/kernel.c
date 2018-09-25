@@ -38,9 +38,8 @@
 
 #include <kernel/kernel_early/multiboot.h>
 
-
 int
-kinit()
+kinit(multiboot_header_t *multiboot)
 {
 	return 0;
 }
