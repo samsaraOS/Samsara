@@ -42,8 +42,11 @@
 int
 kinit(multiboot_header_t *multiboot)
 {
+	printf("HELLO");
 
-	printf("Hello\n");
+	asm("movl $0x1234, %eax");
+	asm("cli");
+	asm("hlt");
 	do {} while (1);
 	return 0;
 }
