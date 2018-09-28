@@ -39,14 +39,13 @@
 #include <kernel/kernel_early/multiboot.h>
 #include <kernel/tty.h>
 
+#define panic(msg) __panic(msg, __FILE__, __LINE__);
+
 int
 kinit(multiboot_header_t *multiboot)
 {
-	printf("HELLO");
+	panic("HELLO");
 
-	asm("movl $0x1234, %eax");
-	asm("cli");
-	asm("hlt");
 	do {} while (1);
 	return 0;
 }

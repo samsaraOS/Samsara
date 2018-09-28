@@ -65,20 +65,13 @@ _start:
 	call 	tty_init
 
 	; Clearing paging if it has been set up.
-	; mov 	eax, cr0
-	; and 	eax, 0x7fffffff
-	; mov 	cr0, eax
+	mov 	eax, cr0
+	and 	eax, 0x7fffffff
+	mov 	cr0, eax
 
 	; Loading the global descriptor table.
-	; We'll have a tiny jmp to avoid issues, ugly hack
-	; but works.
-	;lgdt	[GDT64.Ptr]
-	;jmp 	$+2
-	;nop
+	lgdt	[GDT64.Ptr]
 
-	; Loading Task State Segment
-	;mov 	ax, GDT64.TSS
-	;ltr	ax
 
 	; Calling kinit, a initializion function for setting
 	; up 64-bit long mode. The sole purpose of this is
@@ -97,4 +90,32 @@ _start:
 	cli
 	hlt
 	jmp 	.hang
+
+GDT64:
+	.Null: equ $ - GDT64
+		dw 0xFFFF
+		dw 	0	
+		db 	0
+		db 	0
+		db 	1
+		db 	0
+	.Code: equ $ - GDT64
+		dw 	0
+		dw	0
+		db	0
+		db	0x9a
+		db	0xaf
+		db	0
+	.Datai: equ $ - GDT64
+		dw 	0
+		dw	0
+		db	0
+		db	0x92
+		db	0
+		db	0
+	.TSS: equ $ - GDT64
+		times 0x64 dw 0
+	.Ptr: equ $ - GDT64 - 1
+		dq	GDT64
+
 

@@ -51,15 +51,15 @@ static void
 __reverse(char str[])
 {
 	int i;
-	char tmp[16];
+	char tmp[64];
 	size_t len;
 
 	len = strlen(str) - 1;
-	memset(tmp, 0, 16);
+	memset(tmp, 0, 64);
 
-	for (i = 0; i <  16; i++)
+	for (i = 0; i <  64; i++)
 		tmp[i] = str[len-i];
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 64; i++)
 		str[i] = tmp[i];
 	str[i++] = '\0';
 }

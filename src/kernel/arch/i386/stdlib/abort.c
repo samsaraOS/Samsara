@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 static void
 dump_regs_and_stack()
 {
@@ -39,24 +38,20 @@ void
 __panic(char *msg, char *file, int line)
 {
 	printf("*** kernel panic: %s\n", msg);
-	printf("    at line %d of file %s\n", line, file);
+	printf("    at line: %d\n", line);
+	printf("    in file: %s\n", file); 
 	printf("stack trace:\n");
 	dump_regs_and_stack();
 	while (1) { }
 	__builtin_unreachable();
 } 
-	
+
 
 __attribute__((__noreturn__))
 void 
 abort(void) 
 {
-#if defined(__is_libk)
-	printf("abort() called in libk. Someone has made a big mistake.\n");
-#else
-	// TODO: Abnormally terminate the process as if by SIGABRT.
 	printf("abort()\n");
-#endif
 	while (1) { }
 	__builtin_unreachable();
 }
