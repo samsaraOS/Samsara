@@ -31,8 +31,12 @@
 CC=i686-elf-gcc
 AS=nasm
 
-CFLAGS?=-O2 -g
-lDFLAGS?=
+path=$(PWD)
+sysroot="$(path)/sysroot"
+
+CFLAGS?=--sysroot=$(sysroot) -O2 -g
+CFLAGS?=--isystem=$(sysroot)/usr/local/include 
+LDFLAGS?=
 LIBS?=
 
 DESTDIR=sysroot
@@ -45,43 +49,17 @@ LIBDIR=$(EXEC_PREFIX)/lib
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 LDFLAGS:=$(LDFLAGS)
-LIBS:=$(LIBS) -nostdlib -lk -lgcc
+LIBS:=$(LIBS) -nostdlib -lgcc
 
 ARCHDIR=src/kernel/arch/i386
-LIBK_ARCHDIR=src/libk/arch/i386
 
 include $(ARCHDIR)/make.config
-include $(LIBK_ARCHDIR)/make.config
 
 CFLAGS:=$(CFLAGS) $(KARCH_CFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KARCH_LIBS)
 
-LIBK_CFLAGS:=$(CFLAGS) $(KARCH_CFLAGS)
 
-LIBK_FREE_OBJS=\
-	$(ARCH_FREEOBJS) \
-	src/libk/stdio/printf.o \
-	src/libk/stdio/putchar.o \
-	src/libk/stdio/puts.o \
-	src/libk/stdlib/abort.o \
-	src/libk/string/memcmp.o \
-	src/libk/string/memcpy.o \
-	src/libk/string/memmove.o \
-	src/libk/string/memset.o \
-	src/libk/string/strlen.o
-
-LIBK_HOSTEDOBJS=\
-	$(LIBK_ARCH_HOSTEDOBJS)
-
-LIBK_OBJS=\
-	$(LIBK_FREE_OBJS) \
-	$(LIBK_HOSTEDOBJS)
-
-LIBK_OBJS_FINAL=$(LIBK_FREE_OBJS:.o=.libk.o)
-
-# Add libc when it's possible to implement :)
-BINARIES=libk.a
 
 KERN_OBJS=\
 	$(KARCH_OBJS) \
@@ -104,9 +82,9 @@ LINK_LIST=\
 	$(ARCHDIR)/cruntime/crtn.o 
 
 .PHONY: all clean install install-headers install-kernels qemu
-.SUFFIXES: .o .libk.o .c .asm
+.SUFFIXES: .o .c .asm
 
-all: install-headers libk_install-headers libk_all libk_install samsara.kernel
+all: install-headers samsara.kernel
 	grub-file --is-x86-multiboot samsara.kernel
 	mkdir -p tmp/iso/boot/grub
 
@@ -124,16 +102,16 @@ all: install-headers libk_install-headers libk_all libk_install samsara.kernel
 	
 
 samsara.kernel: $(OBJS) $(ARCHDIR)/linker.ld
-	$(CC) --sysroot=$(DESTDIR) -T $(ARCHDIR)/linker.ld -o $@ \
+	$(CC) -g -T $(ARCHDIR)/linker.ld -o $@ \
 		$(CFLAGS) $(LINK_LIST)
 
 $(ARCHDIR)/cruntime/crtbegin.o $(ARCHDIR)/cruntime/crtend.o:
-	OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
+	OBJ=`$(CC) -g $(CFLAGS) $(LDFLAGS) \
+		-print-file-name=$(@F)` && cp "$$OBJ" $@
 
 .c.o:
 	$(CC) -MD -I sysroot/usr/local/include \
-		-c $< -o $@ -std=gnu11 $(CFLAGS) \
-		--sysroot=$(DESTDIR)
+		-c $< -o $@ -std=gnu11 $(CFLAGS)
 		
 .asm.o:
 	$(AS) -felf32 -o $@ $<
@@ -151,7 +129,7 @@ clean:
 	rm -rf $(OBJS:.o=.d) *.d */*.d */*/*.d */*/*/*.d
 	rm -rf bin/*
 
-install: install-headers libk_install-headers libk_all install-kernel
+install: install-headers install-kernel
 
 install-headers:
 	mkdir -p $(DESTDIR)$(INCLUDE_DIR)
@@ -161,26 +139,6 @@ install-kernel: samsara.kernel
 	mkdir -p $(DESTDIR)$(BOOTDIR)
 	cp samsara.kernel $(DESTDIR)$(BOOTDIR)
 
-libk_all: $(BINARIES)
-
-libk.a: $(LIBK_OBJS_FINAL)
-	$(AR) rcs $@ $(LIBK_OBJS_FINAL)
-
-.c.libk.o:
-	$(CC) -MD -I sysroot/usr/local/include -c $< -o $@ -std=gnu11 $(LIBK_CFLAGS)
-
-libk_install: libk_install-headers libk_install-libs
-
-libk_install-headers:
-	mkdir -p $(DESTDIR)$(INCLUDE_DIR)
-	cp -r src/libk/include/* $(DESTDIR)$(INCLUDE_DIR)/.
-
-libk_install-libs:
-	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp $(BINARIES) $(DESTDIR)$(LIBDIR)
-	
-
 -include $(OBJS:.o=.d)
--include $(LIBK_OBJS:.o=.d)
  
 
