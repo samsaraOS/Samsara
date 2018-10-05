@@ -28,26 +28,18 @@
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
  */
-  
-#include <stdio.h>
-#include <stdlib.h>
+
+#if !defined(__io_h__)
+#define __io_h__
+
 #include <stdint.h>
-#include <string.h>
-
-#include <kernel/kernel_early/multiboot.h>
-#include <kernel/tty.h>
-#include <kernel/serial.h>
-
-#define msg_prefix "*** KERNEL:"
-#define panic(msg) __panic(msg, __FILE__, __LINE__);
-
 
 void
-kinit()
-{
-	abort();
-}
+outb(unsigned char byte, short port);
 
+unsigned char
+inb(short port);
+
+#endif
 

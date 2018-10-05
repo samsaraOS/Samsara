@@ -60,7 +60,6 @@ LDFLAGS:=$(LDFLAGS) $(KARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KARCH_LIBS)
 
 
-
 KERN_OBJS=\
 	$(KARCH_OBJS) \
 	src/kernel/kernel/kernel.o
@@ -117,7 +116,7 @@ $(ARCHDIR)/cruntime/crtbegin.o $(ARCHDIR)/cruntime/crtend.o:
 	$(AS) -felf32 -o $@ $<
 
 qemu:
-	/usr/local/bin/qemu-system-i386 bin/samsara.iso
+	/usr/local/bin/qemu-system-x86_64 bin/samsara.iso
 
 clean:
 	rm -rf sysroot
